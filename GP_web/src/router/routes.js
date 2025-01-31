@@ -1,0 +1,45 @@
+
+const routes = [
+   {
+     path: '/dashboard',
+     component: () => import('layouts/MainLayout.vue'),
+     children: [
+      { path: '', component: () => import('pages/IndexPage.vue') }
+    ],
+    meta: { requiresAuth: true }
+   },
+
+  // //Rutas Administrador
+{
+    path: "/admin",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [
+      { path: "", component: () => import("pages/admin/DashboardAdmin.vue") },
+      // { path: "add-worker", component: () => import("pages/admin/AddWorker.vue") },
+      // { path: "update-worker", component: () => import("pages/admin/UpdateWorker.vue") },
+      // { path: "worker-history", component: () => import("pages/admin/WorkerHistory.vue") },
+      // { path: "client-history", component: () => import("pages/admin/ClientHistory.vue") },
+      // { path: "add-client", component: () => import("pages/admin/AddClient.vue") },
+      // { path: "update-client", component: () => import("pages/admin/UpdateClient.vue") },
+      // { path: "create-project", component: () => import("pages/admin/CreateProject.vue") },
+      // { path: "project-history", component: () => import("pages/admin/ProjectHistory.vue") },
+      // { path: "edit-project", component: () => import("pages/admin/EditProject.vue") },
+    ],
+    meta: { requiresAuth: true, role: "Administrador" }, // 🔒 Protegido por rol
+  },
+
+
+  {
+    path: '/',
+    component: () => import('components/auth/LoginForm.vue'),
+  },
+
+  // Always leave this as last one,
+  // but you can also remove it
+  {
+    path: '/:catchAll(.*)*',
+    component: () => import('pages/ErrorNotFound.vue')
+  }
+]
+
+export default routes
