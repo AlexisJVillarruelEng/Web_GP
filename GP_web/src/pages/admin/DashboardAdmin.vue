@@ -3,6 +3,14 @@
     <!-- Barra lateral con opciones -->
     <div class="userrole">
       <UserRole />
+
+      <!-- Botón de Cerrar Sesión -->
+      <q-btn
+        label="Cerrar Sesión"
+        color="red"
+        class="logout-button"
+        @click="logout"
+      />
     </div>
 
     <!-- Contenedor central con el logo -->
@@ -23,11 +31,13 @@
 </template>
 
 <script>
+import { useRouter } from "vue-router";
 import UserRole from "components/admin/user-role.vue";
-import ProjectActions from "components/admin/admin-ClientActions.vue";
+import ProjectActions from "components/admin/admin-clientActions.vue";
 import WorkerActions from "components/admin/admin-workerActions.vue";
 import ClientActions from "components/admin/admin-projectActions.vue";
 import ArchiveHistory from "components/admin/admin-archiveHistory.vue";
+
 
 export default {
   name: "AdminDashboard",
@@ -37,6 +47,17 @@ export default {
     WorkerActions,
     ClientActions,
     ArchiveHistory,
+  },
+  setup() {
+    const router = useRouter(); // Importamos el router para redireccionar
+
+    // 🔴 Método para cerrar sesión
+    const logout = () => {
+      localStorage.removeItem("userData"); // Eliminar datos del usuario
+      router.push("/"); // Redirigir a Login
+    };
+
+    return { logout };
   },
 };
 </script>
@@ -56,6 +77,15 @@ export default {
 .userrole {
   width: 20%;
   min-width: 250px;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centrar el botón */
+}
+
+/* Botón de cerrar sesión */
+.logout-button {
+  margin-top: 20px;
+  width: 80%;
 }
 
 /* Contenedor del logo */
@@ -68,7 +98,7 @@ export default {
 
 /* Imagen del logo */
 .company-logo {
-  width: 300px;
+  width: 400px;
   height: 300px;
   display: flex;
   align-items: center;

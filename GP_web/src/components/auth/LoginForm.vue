@@ -76,11 +76,16 @@ export default {
         localStorage.setItem("userData", JSON.stringify(data));
 
         // ✅ Notificación
-
+        $q.notify({
+          message: "Inicio de Sesion exitoso.",
+          color: "positive",
+          position: "bottom",
+          timeout: 5000
+        });
 
         // ✅ Redirección según el rol
         if (data.rol === "Administrador") {
-          router.push("/dashboard");
+          router.push("/admin");
         } else if (data.rol === "Trabajador") {
           router.push("/dashboard/trabajador");
         } else {
