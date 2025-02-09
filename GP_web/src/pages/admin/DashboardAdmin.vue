@@ -33,9 +33,9 @@
 <script>
 import { useRouter } from "vue-router";
 import UserRole from "components/admin/user-role.vue";
-import ProjectActions from "components/admin/admin-clientActions.vue";
+import ProjectActions from "components/admin/admin-projectActions.vue";
 import WorkerActions from "components/admin/admin-workerActions.vue";
-import ClientActions from "components/admin/admin-projectActions.vue";
+import ClientActions from "components/admin/admin-clientActions.vue";
 import ArchiveHistory from "components/admin/admin-archiveHistory.vue";
 
 

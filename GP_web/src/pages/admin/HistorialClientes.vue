@@ -11,8 +11,9 @@
 </template>
 
 <script>
-import AdminFiltroCliente from "components/admin-filtro-cliente.vue";
-import AdminTablaClientes from "components/admin-tabla-clientes.vue";
+import AdminFiltroCliente from "components/admin/admin-filtro-clientes.vue";
+import AdminTablaClientes from "components/admin/admin-tabla-clientes.vue";
+
 
 export default {
   name: "HistorialClientes",
@@ -51,7 +52,7 @@ export default {
   methods: {
     async fetchClientes() {
       try {
-        const response = await this.$api.get("/gpromecAPIv1/Clientes");
+        const response = await this.$api.get("/Clientes");
         console.log("Clientes obtenidos:", response.data);
 
         this.clientes = response.data.map(cliente => ({

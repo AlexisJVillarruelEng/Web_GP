@@ -31,6 +31,26 @@
           :obras="obras"
         />
       </q-tab-panel>
+
+      <!--- 📌 Formulario para agregar procesos -->
+
+      <q-tab-panel name="procesos">
+        <FormProcesos />
+      </q-tab-panel>
+      <!--- 📌 Formulario para agregar tareas -->
+      <q-tab-panel name="tareas">
+        <FormTareas />
+      </q-tab-panel>
+      <!--- 📌 Formulario para agregar detalle IPERC -->
+      <q-tab-panel name="iperc">
+        <FormDetalleIPERC />
+      </q-tab-panel>
+
+      <q-tab-panel name="firmas">
+        <FormFirmas />
+      </q-tab-panel>
+
+
     </q-tab-panels>
   </q-page>
 </template>
@@ -39,13 +59,24 @@
 import FormProyecto from "components/admin/form-proyecto.vue";
 import FormObra from "components/admin/form-obra.vue";
 import FormPartida from "components/admin/form-partida.vue";
+import FormProcesos from "src/components/admin/form-procesos.vue";
+import FormTareas from "src/components/admin/form-tarea.vue";
+import FormDetalleIPERC from "src/components/admin/form-detalleiperc.vue";
+import formFirmas from "src/components/admin/form-firmas.vue";
+import FormFirmas from "src/components/admin/form-firmas.vue";
+
+
 
 export default {
   name: "CrearProyecto",
   components: {
     FormProyecto,
     FormObra,
-    FormPartida
+    FormPartida,
+    FormProcesos,
+    FormTareas,
+    FormDetalleIPERC,
+    FormFirmas
   },
   data() {
     return {
