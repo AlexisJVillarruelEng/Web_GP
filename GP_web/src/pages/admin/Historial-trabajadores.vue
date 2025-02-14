@@ -62,8 +62,8 @@ export default {
 
         // 🔥 **Filtrar por fecha**
         const cumpleFecha = this.filtro.fecha
-          ? trabajador.fechaCreacion?.startsWith(this.filtro.fecha)
-          : true;
+        ? this.compararFechas(trabajador.fechaCreacion, this.filtro.fecha)
+        : true;
 
         // 🔥 **Filtrar por estado usando texto**
         const cumpleEstado = this.filtro.estado === "Todos" || estadoTexto === this.filtro.estado;
@@ -84,7 +84,7 @@ export default {
         // Asignamos los datos recibidos a la variable `trabajadores`
         this.trabajadores = response.data.map(trabajador => ({
           ...trabajador,
-          fechaCreacion: trabajador.fechaCreacion ? trabajador.fechaCreacion.split("T")[0] : ""
+          fechaCreacion: trabajador.fechaCreacion ? this.formatearFecha(trabajador.fechaCreacion).split("T")[0] : ""
         }));
 
         console.log("📊 Trabajadores procesados y asignados:", this.trabajadores);
@@ -96,7 +96,24 @@ export default {
     aplicarFiltros(filtro) {
       console.log("⚡ Aplicando filtros:", filtro);
       this.filtro = filtro;
-    }
+    },
+    formatearFecha(fecha) {
+      if (!fecha) return "";
+      const fechaObj = new Date(fecha + "T00:00:00"); // 🔹 Evita desfase de zona horaria
+      const dia = fechaObj.getUTCDate().toString().padStart(2, "0");
+      const mes = (fechaObj.getUTCMonth() + 1).toString().padStart(2, "0"); // 🔹 JavaScript cuenta meses desde 0
+      const año = fechaObj.getUTCFullYear();
+      return `${dia}/${mes}/${año}`; // 🔹 Devuelve formato DD/MM/AAAA
+    },
+    compararFechas(fechaTrabajador, fechaFiltro) {
+    if (!fechaTrabajador || !fechaFiltro) return false;
+
+    // 🔹 Convertimos a formato YYYY-MM-DD para comparar correctamente
+    const fechaTrabajadorISO = new Date(fechaTrabajador).toISOString().split("T")[0];
+    const fechaFiltroISO = new Date(fechaFiltro).toISOString().split("T")[0];
+
+    return fechaTrabajadorISO <= fechaFiltroISO;
+  }
   },
 
   mounted() {
@@ -106,9 +123,27 @@ export default {
 </script>
 
 <style scoped>
-.tabla-estilizada {
+.q-page {
+display: flex;
+margin-top: 0px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.filtro-container {
+  width: 100%;
+  max-width: 800px;
+  margin-bottom: 20px;
+}
+
+.tabla-container {
+  width: 100%;
   max-width: 1000px;
-  margin: auto;
+}
+
+.tabla-estilizada {
+  width: 80%;
   border-radius: 8px;
   overflow: hidden;
 }

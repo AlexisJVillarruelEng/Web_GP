@@ -80,7 +80,7 @@ export default {
       proyectoSeleccionado: null,
       obraSeleccionada: null,
       partidaSeleccionada: null,
-      tareaSeleccionada: null,
+      tareaSeleccionada: null, // ✅ Tarea seleccionada para formulario
       clientes: [],
       proyectos: [],
       obras: [],
@@ -99,16 +99,7 @@ export default {
         { name: "riesgos", label: "Riesgos", field: "riesgos", align: "left" },
         { name: "tipoRiesgo", label: "Tipo de Riesgo", field: "tipoRiesgo", align: "center" },
         { name: "medidaControlDescrip", label: "Medidas de Control", field: "medidaControlDescrip", align: "left" },
-        { name: "personasExpuestas", label: "Personas Expuestas", field: "personasExpuestas", align: "center" },
-        { name: "procedimientosExistentes", label: "Procedimientos Existentes", field: "procedimietntosExistentes", align: "center" },
-        { name: "capacitacion", label: "Capacitación", field: "capacitacion", align: "center" },
-        { name: "expoRiesgo", label: "Exposición al Riesgo", field: "expoRiesgo", align: "center" },
-        { name: "probabilidad", label: "Probabilidad", field: "probabilidad", align: "center" },
-        { name: "severidad", label: "Severidad", field: "severidad", align: "center" },
-        { name: "nivelDeRiesgo", label: "Nivel de Riesgo", field: "nivielDeRiesgo", align: "center" },
-        { name: "gradoDeRiesgo", label: "Grado de Riesgo", field: "gradoRiesgo", align: "center" }
       ],
-
     };
   },
   methods: {
@@ -116,27 +107,30 @@ export default {
     async cargarProyectos() { this.proyectos = (await this.$api.get(`/Proyectos/PorCliente/${this.clienteSeleccionado}`)).data; },
     async cargarObras() { this.obras = (await this.$api.get(`/Obras/PorProyecto/${this.proyectoSeleccionado}`)).data; },
     async cargarPartidas() { this.partidas = (await this.$api.get(`/Partidas/PorObra/${this.obraSeleccionada}`)).data; },
+
     async cargarProcesos() {
-  try {
-    this.procesosGuardados = await Promise.all(
-      (await this.$api.get(`/Procesos/PorPartida/${this.partidaSeleccionada}`)).data.map(async proceso => ({
-        ...proceso,
-        tareas: await Promise.all(
-          (await this.$api.get(`/Tareas/PorProceso/${proceso.idProceso}`)).data.map(async tarea => {
-            const detalleResponse = await this.$api.get(`/DetalleIPERC/PorTarea/${tarea.idTarea}`).catch(() => ({ data: [] }));
-            console.log(`📌 Detalles IPERC para tarea ${tarea.idTarea}:`, detalleResponse.data);
-            return {
-              ...tarea,
-              detalleIPERC: detalleResponse.data
-            };
-          })
-        )
-      }))
-    );
-  } catch (error) {
-    console.error("❌ Error cargando procesos y tareas:", error);
-  }
-},
+      try {
+        this.procesosGuardados = await Promise.all(
+          (await this.$api.get(`/Procesos/PorPartida/${this.partidaSeleccionada}`)).data.map(async proceso => ({
+            ...proceso,
+            tareas: await Promise.all(
+              (await this.$api.get(`/Tareas/PorProceso/${proceso.idProceso}`)).data.map(async tarea => ({
+                ...tarea,
+                detalleIPERC: (await this.$api.get(`/DetalleIPERC/PorTarea/${tarea.idTarea}`).catch(() => ({ data: [] }))).data
+              }))
+            )
+          }))
+        );
+      } catch (error) {
+        console.error("❌ Error cargando procesos y tareas:", error);
+      }
+    },
+
+    seleccionarTarea(tarea) {
+      this.tareaSeleccionada = tarea;
+      console.log("✅ Tarea seleccionada:", tarea);
+    },
+
     async guardarDetalleIPERC() {
       await this.$api.post("/DetalleIPERC", { ...this.detalleIPERC, idTarea: this.tareaSeleccionada.idTarea });
       await this.cargarProcesos();

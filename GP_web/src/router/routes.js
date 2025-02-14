@@ -22,9 +22,11 @@ const routes = [
       { path: "add-client", component: () => import("src/pages/admin/Anadir-Cliente.vue") },
       { path: "update-client", component: () => import("pages/admin/Actualizar-EliminarCliente.vue") },
       { path: "create-project", component: () => import("pages/admin/CrearProyecto.vue") },
-      // { path: "project-history", component: () => import("pages/admin/ProjectHistory.vue") },
-      // { path: "edit-project", component: () => import("pages/admin/EditProject.vue") },
-      // { path: "finish-project", component: () => import("pages/admin/FinishProject.vue") },
+      { path: "project-history", component: () => import("pages/admin/HistorialProyectos.vue") },
+      { path: "edit-project", component: () => import("pages/admin/EditarProyecto.vue") },
+      { path: "finish-project", component: () => import("pages/admin/FinalizarProyecto.vue") },
+      {path: "archive-history", component: () => import("pages/admin/archivosGenerados.vue")},
+      // archivos pdf excel
     ],
     meta: { requiresAuth: true, role: "Administrador" }, // 🔒 Protegido por rol
   },
