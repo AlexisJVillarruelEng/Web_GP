@@ -15,7 +15,7 @@
     </q-input>
 
     <!-- 📅 Selector de fecha -->
-    <q-input
+    <!-- <q-input
       v-model="fechaSeleccionada"
       label="Filtrar por fecha"
       outlined
@@ -26,11 +26,11 @@
       <template v-slot:append>
         <q-icon name="event" class="cursor-pointer" @click="abrirCalendario = true" />
       </template>
-    </q-input>
+    </q-input> -->
 
-    <q-dialog v-model="abrirCalendario">
+    <!-- <q-dialog v-model="abrirCalendario">
       <q-date v-model="fechaSeleccionada" mask="YYYY-MM-DD" @update:model-value="emitirFiltro" />
-    </q-dialog>
+    </q-dialog> -->
   </div>
 </template>
 
@@ -48,7 +48,7 @@ export default {
     emitirFiltro() {
       this.$emit("filtrar", {
         query: this.busqueda,
-        fecha: this.fechaSeleccionada
+        // fecha: this.fechaSeleccionada
       });
     }
   }
@@ -57,9 +57,11 @@ export default {
 
 <style scoped>
 .filtro-container {
-  display: flex;
+  display: flexbox;
+  flex-direction: row;
   align-items: center;
   gap: 15px;
   margin-bottom: 20px;
+  padding: 10px;
 }
 </style>

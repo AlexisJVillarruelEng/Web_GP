@@ -37,6 +37,20 @@ const routes = [
     component: () => import('components/auth/LoginForm.vue'),
   },
 
+
+  {
+    path: '/empresa',
+    component: () => import('components/auth/LoginFormEmpresa.vue'),
+  },
+  //rutas empresas
+  {
+    path: "/dashboard-empresas",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [
+      { path: "", component: () => import("pages/empresas/empresasdashboard.vue") },
+    ],
+  },
+
   // Always leave this as last one,
   // but you can also remove it
   {

@@ -28,6 +28,8 @@
 
         <div class="button-container">
           <q-btn label="Login" type="submit" color="primary" />
+          <!--<q-btn label="Empresa" color="primary"></q-btn>-->
+          <q-btn label="Login Empresa" color="secondary" @click="goToEmpresaLogin" />
         </div>
       </q-form>
     </q-card>
@@ -101,6 +103,10 @@ export default {
         console.error("Error en login:", error);
       }
     };
+    const goToEmpresaLogin = () => {
+      // Redirige a la pantalla de login específica para empresa
+      router.push("/empresa");
+    };
 
     // ✅ Revisar si ya hay una sesión activa en `localStorage`
     onMounted(() => {
@@ -114,7 +120,7 @@ export default {
       }
     });
 
-    return { user, isPassword, togglePassword, Login };
+    return { user, isPassword, togglePassword, Login, goToEmpresaLogin };
   }
 };
 </script>

@@ -12,8 +12,10 @@
         option-value="idCliente"
         option-label="nombreCliente"
         label="Seleccionar Cliente"
-        outlined dense
-        emit-value map-options
+        outlined
+        dense
+        emit-value
+        map-options
         @update:model-value="cargarProyectos"
       />
       <q-select
@@ -22,8 +24,10 @@
         option-value="idProyecto"
         option-label="nombreProyecto"
         label="Seleccionar Proyecto"
-        outlined dense
-        emit-value map-options
+        outlined
+        dense
+        emit-value
+        map-options
         @update:model-value="cargarObras"
       />
       <q-select
@@ -32,8 +36,10 @@
         option-value="idObra"
         option-label="nombreObra"
         label="Seleccionar Obra"
-        outlined dense
-        emit-value map-options
+        outlined
+        dense
+        emit-value
+        map-options
         @update:model-value="cargarPartidas"
       />
       <q-select
@@ -42,8 +48,10 @@
         option-value="idPartida"
         option-label="nombrePartida"
         label="Seleccionar Partida"
-        outlined dense
-        emit-value map-options
+        outlined
+        dense
+        emit-value
+        map-options
         @update:model-value="cargarProcesos"
       />
     </q-card-section>
@@ -77,18 +85,28 @@
 
     <!-- 📌 Formulario para añadir tareas -->
     <q-card-section v-if="procesoSeleccionado">
-      <div class="text-subtitle1">Proceso Seleccionado: {{ procesoSeleccionado.nombreProceso }}</div>
+      <div class="text-subtitle1">
+        Proceso Seleccionado: {{ procesoSeleccionado.nombreProceso }}
+      </div>
 
-      <q-card-section v-for="(tarea, index) in tareas" :key="index">
+      <!-- Se muestran todas las tareas en recuadros separados -->
+      <q-card-section
+        v-for="(tarea, index) in tareas"
+        :key="index"
+        class="q-pa-sm q-mb-sm"
+        style="border: 1px solid #ccc; border-radius: 4px;"
+      >
         <q-input v-model="tarea.nombreTarea" label="Nombre de la Tarea" outlined dense />
         <q-select
           v-model="tarea.tareaTipo"
           :options="['R', 'NR', 'E']"
           label="Tipo de Tarea"
-          outlined dense
+          outlined
+          dense
           emit-value
           map-options
         />
+        <!-- Botón para eliminar la tarea del frontend -->
         <q-btn color="negative" label="Eliminar" flat @click="eliminarTarea(index)" />
       </q-card-section>
 
@@ -115,7 +133,8 @@ export default {
       obras: [],
       partidas: [],
       procesosGuardados: [],
-      tareas: [{ nombreTarea: "", tareaTipo: "R" }], // 🔹 Se inicia con tipo "R" por defecto
+      // Iniciamos con un array vacío para tareas; se agregarán nuevas tareas
+      tareas: [],
       columnasProcesos: [
         { name: "nombreProceso", label: "Proceso", field: "nombreProceso", align: "left" },
         { name: "tareas", label: "Tareas - Tipo", field: "tareas", align: "left" },
@@ -123,7 +142,7 @@ export default {
     };
   },
   methods: {
-    // 🔹 Cargar Clientes
+    // Cargar Clientes
     async cargarClientes() {
       try {
         const response = await this.$api.get("/Clientes");
@@ -132,8 +151,7 @@ export default {
         console.error("Error cargando clientes:", error);
       }
     },
-
-    // 🔹 Cargar Proyectos de un Cliente
+    // Cargar Proyectos de un Cliente
     async cargarProyectos() {
       if (!this.clienteSeleccionado) return;
       try {
@@ -143,8 +161,7 @@ export default {
         console.error("Error cargando proyectos:", error);
       }
     },
-
-    // 🔹 Cargar Obras de un Proyecto
+    // Cargar Obras de un Proyecto
     async cargarObras() {
       if (!this.proyectoSeleccionado) return;
       try {
@@ -154,8 +171,7 @@ export default {
         console.error("Error cargando obras:", error);
       }
     },
-
-    // 🔹 Cargar Partidas de una Obra
+    // Cargar Partidas de una Obra
     async cargarPartidas() {
       if (!this.obraSeleccionada) return;
       try {
@@ -165,77 +181,85 @@ export default {
         console.error("Error cargando partidas:", error);
       }
     },
-
-    // 🔹 Cargar Procesos y reflejarlos en la tabla con sus tareas
+    // Cargar Procesos y reflejarlos en la tabla con sus tareas
     async cargarProcesos() {
-    if (!this.partidaSeleccionada) {
-      console.warn("⚠️ No hay partida seleccionada para cargar procesos.");
-      return;
-    }
-
-    try {
-      console.log("🔄 Cargando procesos de la partida:", this.partidaSeleccionada);
-      const response = await this.$api.get(`/Procesos/PorPartida/${this.partidaSeleccionada}`);
-
-      // Cargar cada proceso con sus tareas asociadas
-      this.procesosGuardados = await Promise.all(response.data.map(async (proceso) => {
-        try {
-          const tareasResponse = await this.$api.get(`/Tareas/PorProceso/${proceso.idProceso}`);
-          return { ...proceso, tareas: tareasResponse.data };
-        } catch (error) {
-          console.error(`❌ Error cargando tareas para proceso ${proceso.idProceso}:`, error);
-          return { ...proceso, tareas: [] };
-        }
-      }));
-
-      console.log("✅ Procesos y tareas cargados correctamente:", this.procesosGuardados);
-    } catch (error) {
-      console.error("❌ Error cargando procesos:", error);
-    }
-  },
-
-  // 📌 Seleccionar proceso y cargar sus tareas
-  seleccionarProceso(proceso) {
-    if (!proceso || !proceso.idProceso) {
-      console.error("❌ Error: No se pudo seleccionar el proceso.");
-      return;
-    }
-    this.procesoSeleccionado = { ...proceso };
-    console.log("✅ Proceso seleccionado:", this.procesoSeleccionado.nombreProceso);
-  },
-
-  // 📌 Guardar tareas en la API con el proceso seleccionado correcto
-  async guardarTodasLasTareas() {
-    if (!this.procesoSeleccionado || !this.procesoSeleccionado.idProceso) {
-      this.$q.notify({ type: "negative", message: "Debe seleccionar un proceso antes de guardar tareas." });
-      return;
-    }
-
-    try {
-      for (const tarea of this.tareas) {
-        const tareaAEnviar = {
-          nombreTarea: tarea.nombreTarea,
-          tareaTipo: tarea.tareaTipo,
-          idProceso: this.procesoSeleccionado.idProceso,
-        };
-
-        console.log("📤 Enviando tarea:", tareaAEnviar);
-        await this.$api.post("/Tareas", tareaAEnviar);
+      if (!this.partidaSeleccionada) {
+        console.warn("No hay partida seleccionada para cargar procesos.");
+        return;
       }
-
-      this.$q.notify({ type: "positive", message: "Tareas guardadas con éxito!" });
-      console.log("✅ Tareas guardadas correctamente para el proceso:", this.procesoSeleccionado.idProceso);
-
-      // 🔄 Recargar lista de procesos y tareas después de guardar
-      await this.cargarProcesos();
-    } catch (error) {
-      console.error("❌ Error guardando tareas:", error);
-      this.$q.notify({ type: "negative", message: "Error al guardar las tareas." });
-    }
-  },
+      try {
+        const response = await this.$api.get(`/Procesos/PorPartida/${this.partidaSeleccionada}`);
+        this.procesosGuardados = await Promise.all(
+          response.data.map(async (proceso) => {
+            try {
+              const tareasResponse = await this.$api.get(`/Tareas/PorProceso/${proceso.idProceso}`);
+              return { ...proceso, tareas: tareasResponse.data };
+            } catch (error) {
+              console.error(`Error cargando tareas para proceso ${proceso.idProceso}:`, error);
+              return { ...proceso, tareas: [] };
+            }
+          })
+        );
+        console.log("Procesos y tareas cargados:", this.procesosGuardados);
+      } catch (error) {
+        console.error("Error cargando procesos:", error);
+      }
+    },
+    // Seleccionar un proceso y cargar sus tareas en el formulario
+    seleccionarProceso(proceso) {
+      if (!proceso || !proceso.idProceso) {
+        console.error("Error: No se pudo seleccionar el proceso.");
+        return;
+      }
+      this.procesoSeleccionado = { ...proceso };
+      // Copiamos las tareas existentes (si las hay) o iniciamos un array vacío
+      this.tareas = proceso.tareas ? JSON.parse(JSON.stringify(proceso.tareas)) : [];
+      console.log("Proceso seleccionado:", this.procesoSeleccionado.nombreProceso);
+    },
+    // Agregar una nueva tarea (abrir un nuevo recuadro en el formulario)
+    agregarTarea() {
+      this.tareas.push({ nombreTarea: "", tareaTipo: "R" });
+    },
+    // Eliminar una tarea del frontend (del array "tareas")
+    eliminarTarea(index) {
+      this.tareas.splice(index, 1);
+    },
+    // Guardar todas las tareas en la base de datos
+    async guardarTodasLasTareas() {
+      if (!this.procesoSeleccionado || !this.procesoSeleccionado.idProceso) {
+        this.$q.notify({ type: "negative", message: "Debe seleccionar un proceso antes de guardar tareas." });
+        return;
+      }
+      try {
+        for (const tarea of this.tareas) {
+          const tareaAEnviar = {
+            nombreTarea: tarea.nombreTarea,
+            tareaTipo: tarea.tareaTipo,
+            idProceso: this.procesoSeleccionado.idProceso,
+          };
+          console.log("Enviando tarea:", tareaAEnviar);
+          await this.$api.post("/Tareas", tareaAEnviar);
+        }
+        this.$q.notify({ type: "positive", message: "Tareas guardadas con éxito!" });
+        await this.cargarProcesos();
+      } catch (error) {
+        console.error("Error guardando tareas:", error);
+        this.$q.notify({ type: "negative", message: "Error al guardar las tareas." });
+      }
+    },
   },
   mounted() {
     this.cargarClientes();
   },
 };
 </script>
+
+<style scoped>
+.form-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.tareas-contenedor {
+  margin-top: 0.5rem;
+}
+</style>

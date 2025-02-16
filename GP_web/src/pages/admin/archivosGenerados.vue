@@ -1,6 +1,8 @@
 <template>
   <q-page padding class="q-col-gutter-md">
-    <!-- 1. SELECTORES: Cliente, Proyecto, Obra, Partida -->
+    <!-- =========================
+         SELECTORES
+    ========================== -->
     <q-card class="q-pa-md q-mb-md">
       <q-card-section>
         <div class="text-h6">Seleccionar Cliente, Proyecto, Obra, Partida</div>
@@ -35,6 +37,7 @@
           @update:model-value="cargarObras"
         />
         <!-- Obra -->
+        <!-- Se cambió "obrasSeleccionada" por "obraSeleccionada" -->
         <q-select
           v-model="obraSeleccionada"
           :options="obras"
@@ -65,7 +68,9 @@
       </q-card-section>
     </q-card>
 
-    <!-- 2. MATRIZ IPERC: Procesos, Tareas, Detalles y Firmas -->
+    <!-- =========================
+         MATRIZ IPERC
+    ========================== -->
     <q-card v-if="matrizIperc" class="q-pa-md q-mb-md">
       <q-card-section>
         <div class="text-subtitle1">Matriz IPERC de la Partida {{ partidaSeleccionada }}</div>
@@ -83,11 +88,7 @@
               <q-td>{{ props.row.idProceso }}</q-td>
               <q-td>{{ props.row.nombreProceso }}</q-td>
               <q-td>
-                <div
-                  v-for="tarea in props.row.tareas"
-                  :key="tarea.idTarea"
-                  style="margin-bottom: 1rem;"
-                >
+                <div v-for="tarea in props.row.tareas" :key="tarea.idTarea" style="margin-bottom: 1rem;">
                   <div><strong>Tarea:</strong> {{ tarea.nombreTarea }}</div>
                   <q-table
                     wrap-cells
@@ -122,23 +123,25 @@
       </q-card-section>
     </q-card>
 
-    <!-- 3. DESCARGAS -->
+    <!-- =========================
+         DESCARGAS
+    ========================== -->
     <q-card class="q-pa-md">
       <q-card-section>
         <div class="text-h6">Descargar Archivos</div>
       </q-card-section>
       <q-card-section class="row q-col-gutter-md">
-        <!-- Descarga por ID -->
-        <q-input
+        <!-- Filtro por ID de Archivo -->
+        <!-- <q-input
           v-model="idArchivoFilter"
           label="Descargar por ID de Archivo"
           outlined
           dense
           class="col-3"
         />
-        <q-btn label="Descargar (ID)" color="primary" @click="descargarArchivoPorId" />
-        <!-- Descarga por Proyecto (nota: asegúrate de que 'proyectoParaDescarga' sea solo el ID) -->
-        <q-select
+        <q-btn label="Descargar (ID)" color="primary" @click="descargarArchivoPorId" /> -->
+        <!-- Descarga por Proyecto -->
+        <!-- <q-select
           v-model="proyectoParaDescarga"
           :options="proyectosDescarga"
           option-value="idProyecto"
@@ -150,20 +153,22 @@
           emit-value
           map-options
         />
-        <q-btn label="Descargar Archivos del Proyecto" color="primary" @click="descargarArchivosProyecto" />
-        <!-- Descarga por Carpeta -->
-        <q-input
+        <q-btn label="Descargar Archivos del Proyecto" color="primary" @click="descargarArchivosProyecto" /> -->
+        <!-- Filtro por Carpeta -->
+        <!-- <q-input
           v-model="carpetaFilter"
           label="Descargar por Carpeta"
           outlined
           dense
           class="col-3"
         />
-        <q-btn label="Descargar Archivos de la Carpeta" color="primary" @click="descargarArchivosCarpeta" />
+        <q-btn label="Descargar Archivos de la Carpeta" color="primary" @click="descargarArchivosCarpeta" /> -->
       </q-card-section>
     </q-card>
 
-    <!-- 4. LISTA DE ARCHIVOS FILTRADOS -->
+    <!-- =========================
+         LISTA DE ARCHIVOS FILTRADOS
+    ========================== -->
     <q-card class="q-pa-md q-mt-md">
       <q-card-section>
         <div class="text-h6">Lista de Archivos Filtrados</div>
@@ -190,7 +195,9 @@
       </q-card-section>
     </q-card>
 
-    <!-- 5. FORMULARIO: ARCHIVO GENERADO (Reporte) -->
+    <!-- =========================
+         FORMULARIO: ARCHIVO GENERADO (Reporte)
+    ========================== -->
     <q-card class="q-pa-md q-mt-md">
       <q-card-section>
         <div class="text-h6">Datos para Archivo Generado</div>
@@ -230,6 +237,7 @@ export default {
       // SELECTORES
       clienteSeleccionado: null,
       proyectoSeleccionado: null,
+      // Se utiliza "obraSeleccionada" unificado
       obraSeleccionada: null,
       partidaSeleccionada: null,
       clientes: [],
@@ -283,7 +291,7 @@ export default {
         { name: "acciones", label: "Acciones" }
       ],
 
-      // FORMULARIO ARCHIVO GENERADO
+      // FORMULARIO: ARCHIVO GENERADO
       archivoPost: {
         nombreArchivo: "",
         generadoPor: "",
@@ -296,7 +304,7 @@ export default {
     };
   },
   methods: {
-    /* CARGA DE SELECTORES */
+    /* 1. CARGA DE SELECTORES */
     async cargarClientes() {
       try {
         const resp = await this.$api.get("/Clientes");
@@ -333,7 +341,7 @@ export default {
       }
     },
 
-    /* CARGA DE MATRIZ IPERC */
+    /* 2. CARGA DE MATRIZ IPERC */
     async cargarMatrizCompleta() {
       if (!this.partidaSeleccionada) {
         this.matrizIperc = null;
@@ -362,7 +370,7 @@ export default {
       }
     },
 
-    /* DESCARGAS */
+    /* 3. DESCARGAS */
     async descargarArchivoPorId() {
       if (!this.idArchivoFilter) {
         this.$q.notify({ type: "negative", message: "Ingrese un ID de Archivo" });
@@ -373,7 +381,7 @@ export default {
         const contentDisposition = resp.headers["content-disposition"] || "";
         let fileName = "downloaded_file";
         const fileNameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-        if (fileNameMatch != null && fileNameMatch[1]) {
+        if (fileNameMatch && fileNameMatch[1]) {
           fileName = fileNameMatch[1].replace(/['"]/g, "");
         }
         const fileBlob = new Blob([resp.data], { type: resp.headers["content-type"] });
@@ -398,7 +406,7 @@ export default {
         const contentDisposition = resp.headers["content-disposition"] || "";
         let fileName = "downloaded_project_files.zip";
         const fileNameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-        if (fileNameMatch != null && fileNameMatch[1]) {
+        if (fileNameMatch && fileNameMatch[1]) {
           fileName = fileNameMatch[1].replace(/['"]/g, "");
         }
         const fileBlob = new Blob([resp.data], { type: resp.headers["content-type"] });
@@ -423,7 +431,7 @@ export default {
         const contentDisposition = resp.headers["content-disposition"] || "";
         let fileName = "downloaded_folder_files.zip";
         const fileNameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-        if (fileNameMatch != null && fileNameMatch[1]) {
+        if (fileNameMatch && fileNameMatch[1]) {
           fileName = fileNameMatch[1].replace(/['"]/g, "");
         }
         const fileBlob = new Blob([resp.data], { type: resp.headers["content-type"] });
@@ -440,13 +448,12 @@ export default {
     },
     descargarArchivo(row) {
       const url = `/ArchivosGenerados/${row.idArchivo}`;
-      // Usamos la misma lógica de descarga
       this.$api.get(url, { responseType: "blob" })
         .then(resp => {
           const contentDisposition = resp.headers["content-disposition"] || "";
           let fileName = "downloaded_file";
           const fileNameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-          if (fileNameMatch != null && fileNameMatch[1]) {
+          if (fileNameMatch && fileNameMatch[1]) {
             fileName = fileNameMatch[1].replace(/['"]/g, "");
           }
           const fileBlob = new Blob([resp.data], { type: resp.headers["content-type"] });
@@ -471,13 +478,12 @@ export default {
       }
     },
 
-    /* CREAR ARCHIVO GENERADO (Reporte) */
+    /* 4. CREAR ARCHIVO GENERADO (Reporte) */
     async crearArchivoGenerado() {
       if (!this.matrizIperc) {
         this.$q.notify({ type: "negative", message: "La matriz IPERC no está cargada." });
         return;
       }
-      // Confirmación: PDF si acepta, Excel si cancela
       const isPdf = window.confirm("¿Generar en PDF? (Cancelar = Excel)");
       let formato = isPdf ? "pdf" : "excel";
 
@@ -504,23 +510,21 @@ export default {
 
         await this.$api.post("/ArchivosGenerados", this.archivoPost);
         this.$q.notify({ type: "positive", message: "Archivo generado y guardado con éxito" });
-        this.listarArchivos("/ArchivosGenerados");
+        this.listarArchivos("/gpromecAPIv1/ArchivosGenerados");
       } catch (error) {
         console.error("Error al generar/guardar el archivo:", error);
         this.$q.notify({ type: "negative", message: "Error al generar el archivo." });
       }
     },
 
-    /* EXPORTAR PDF/EXCEL (CABECERA + TABLA + PIE) */
+    /* 5. EXPORTAR PDF/EXCEL (CABECERA + TABLA + PIE) */
     async exportToPDF_IPERC(datos) {
       const doc = new jsPDF("p", "pt");
       doc.setFontSize(14);
-      // CABECERA
       doc.text(`Cliente: ${this.getClientName(this.clienteSeleccionado)}`, 40, 40);
       doc.text(`Proyecto: ${this.getProjectName(this.proyectoSeleccionado)}`, 40, 60);
       doc.text(`Obra: ${this.getObraName(this.obraSeleccionada)}`, 40, 80);
       doc.text(`Partida: ${this.getPartidaName(this.partidaSeleccionada)}`, 40, 100);
-      // TABLA (Procesos, Tareas, Detalles)
       let yPos = 120;
       doc.setFontSize(12);
       if (datos.procesos) {
@@ -541,7 +545,6 @@ export default {
           });
         });
       }
-      // PIE: Firmas (agregando imágenes si están disponibles)
       yPos += 40;
       doc.setFontSize(10);
       if (datos.firmas) {
@@ -564,6 +567,7 @@ export default {
       const base64String = doc.output("datauristring").split(",")[1];
       return base64String;
     },
+
     async exportToExcel_IPERC(datos) {
       const aoa = [
         [`Cliente: ${this.getClientName(this.clienteSeleccionado)}`],
@@ -592,7 +596,6 @@ export default {
           });
         });
       }
-      // Pie: Firmas
       aoa.push([]);
       aoa.push(["Firmas"]);
       if (datos.firmas) {
@@ -605,6 +608,7 @@ export default {
       XLSX.utils.book_append_sheet(wb, ws, "IPERC");
       return XLSX.write(wb, { bookType: "xlsx", type: "base64" });
     },
+
     async exportToPDF_Otro(datos) {
       const doc = new jsPDF("p", "pt");
       doc.text(`Reporte: ${this.otroReporteNombre}`, 40, 40);
@@ -615,6 +619,7 @@ export default {
       });
       return doc.output("datauristring").split(",")[1];
     },
+
     async exportToExcel_Otro(datos) {
       const ws = XLSX.utils.json_to_sheet(datos);
       const wb = XLSX.utils.book_new();
@@ -622,7 +627,7 @@ export default {
       return XLSX.write(wb, { bookType: "xlsx", type: "base64" });
     },
 
-    /* GETTERS PARA NOMBRES */
+    /* 6. GETTERS PARA NOMBRES */
     getClientName(idCliente) {
       const c = this.clientes.find(x => x.idCliente === idCliente);
       return c ? c.nombreCliente : "Desconocido";
@@ -647,7 +652,7 @@ export default {
     // Cargar clientes
     this.cargarClientes();
 
-    // Cargar trabajadores y construir el mapa workerMap
+    // Cargar trabajadores y crear el mapa workerMap
     try {
       const respTrab = await this.$api.get("/Trabajadores");
       for (const w of respTrab.data) {

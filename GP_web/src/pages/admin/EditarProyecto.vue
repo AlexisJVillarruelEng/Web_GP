@@ -19,7 +19,6 @@
         map-options
         @update:model-value="cargarProyectos"
       />
-
       <!-- Selección de Proyecto -->
       <q-select
         v-model="proyectoSeleccionado"
@@ -33,7 +32,6 @@
         map-options
         @update:model-value="seleccionarProyecto"
       />
-
       <!-- Formulario Proyecto (se actualiza al seleccionar proyecto) -->
       <q-card-section>
         <q-input v-model="proyecto.nombreProyecto" label="Nombre del Proyecto" outlined dense />
@@ -58,49 +56,59 @@
         map-options
         @update:model-value="cargarPartidas"
       />
-
-      <!-- Selección de Partida -->
-      <q-select
-        v-model="partidaSeleccionada"
-        :options="partidas"
-        option-value="idPartida"
-        option-label="nombrePartida"
-        label="Seleccionar Partida"
-        outlined
-        dense
-        emit-value
-        map-options
-        @update:model-value="onPartidaSelected"
-      />
     </q-card-section>
 
-    <!-- Formulario Obra -->
+    <!-- Formulario Obra (cuadros del front-end) -->
     <q-card-section v-for="(obra, index) in obras" :key="index">
       <q-input v-model="obra.nombreObra" label="Nombre de la Obra" outlined dense />
       <q-input v-model="obra.ubicacion" label="Ubicación" outlined dense />
       <q-input v-model="obra.fechaInicio" label="Fecha de Inicio" outlined dense type="date" />
       <q-input v-model="obra.fechaFin" label="Fecha de Fin" outlined dense type="date" />
-      <q-btn color="negative" label="Eliminar frontend" flat @click="eliminarObra(index)" />
+      <!-- Botón que elimina la obra solo en el front-end -->
+      <q-btn color="negative" label="Eliminar frontend" flat @click="eliminarObraFrontend(index)" />
     </q-card-section>
 
     <q-card-actions align="right">
+      <!-- Guardar Obras API: Envía las obras nuevas a la API -->
       <q-btn color="primary" label="Guardar Obras API" @click="enviarObras" />
+      <!-- Agregar otra obra en el front-end -->
       <q-btn color="secondary" label="Agregar Otra Obra Frontend" flat @click="agregarObra" />
-      <q-btn color="tertiary" label="Eliminar Obra API" flat @click="eliminarObra" />
+      <!-- Eliminar Obra API: Elimina la obra seleccionada de la API -->
+      <q-btn color="tertiary" label="Eliminar Obra API" flat @click="eliminarObraAPI" />
+      <!-- Actualizar Obra API -->
       <q-btn color="tertiary" label="Actualizar Obra API" flat @click="actualizarObra" />
     </q-card-actions>
 
-    <!-- Formulario Partida -->
+    <!-- Selección de Partida -->
+    <q-select
+      v-model="partidaSeleccionada"
+      :options="partidas"
+      option-value="idPartida"
+      option-label="nombrePartida"
+      label="Seleccionar Partida"
+      outlined
+      dense
+      emit-value
+      map-options
+      @update:model-value="onPartidaSelected"
+    />
+
+    <!-- Formulario Partida (cuadros del front-end) -->
     <q-card-section v-for="(partida, index) in partidas" :key="index">
       <q-input v-model="partida.nombrePartida" label="Nombre de la Partida" outlined dense />
-      <q-btn color="negative" label="Eliminar Partida Frontend" flat @click="eliminarPartida(index)" />
+      <!-- Eliminar partida solo en front-end -->
+      <q-btn color="negative" label="Eliminar Partida Frontend" flat @click="eliminarPartidaFrontend(index)" />
     </q-card-section>
 
     <q-card-actions align="right">
+      <!-- Guardar Partidas API -->
       <q-btn color="primary" label="Guardar Partidas API" @click="enviarPartidas" />
+      <!-- Agregar otra partida en el front-end -->
       <q-btn color="secondary" label="Agregar Otra Partida Frontend" flat @click="agregarPartida" />
+      <!-- Actualizar Partida API -->
       <q-btn color="secondary" label="Actualizar Partida" flat @click="actualizarPartida" />
-      <q-btn color="negative" label="Eliminar Partida API" flat @click="eliminarPartida" />
+      <!-- Eliminar Partida API -->
+      <q-btn color="negative" label="Eliminar Partida API" flat @click="eliminarPartidaAPI" />
     </q-card-actions>
 
     <!-- 📌 Tabla de Procesos, Tareas y Detalles IPERC -->
@@ -108,20 +116,17 @@
       <q-table :rows="procesosGuardados" :columns="columnasProcesos" row-key="idProceso" dense class="tabla-procesos">
         <template v-slot:body="props">
           <q-tr :props="props">
-            <!-- Se muestra el nombre del proceso -->
             <q-td key="nombreProceso">{{ props.row.nombreProceso }}</q-td>
-            <!-- Botón para seleccionar el proceso y cargarlo en el formulario -->
             <q-td key="acciones">
               <q-btn color="info" flat dense label="Seleccionar" @click.stop="seleccionarProceso(props.row)" />
             </q-td>
             <q-td key="tareas">
               <div class="tareas-contenedor">
                 <div class="tarea-item" v-for="tarea in props.row.tareas" :key="tarea.idTarea">
-                  <!-- Al hacer click en la tarea se carga el detalle en el formulario -->
                   <q-btn flat dense color="primary" @click="seleccionarTarea(tarea)">
                     {{ tarea.nombreTarea }} - ({{ tarea.tareaTipo }})
                   </q-btn>
-                  <!-- Tabla interna de Detalle IPERC con slot para seleccionar detalle -->
+                  <!-- Tabla interna de Detalle IPERC -->
                   <div class="detalle-iperc-container">
                     <q-table
                       v-if="tarea.detalleIPERC && tarea.detalleIPERC.length > 0"
@@ -129,6 +134,7 @@
                       :columns="columnasDetalleIPERC"
                       dense
                       class="tabla-detalle-iperc"
+                      wrap-cells
                     >
                       <template v-slot:body="detalleProps">
                         <q-tr
@@ -164,7 +170,6 @@
       </div>
       <q-input v-model="procesoForm.nombreProceso" label="Nombre del Proceso" outlined dense />
       <div class="q-mt-sm">
-        <!-- Si es un proceso existente se muestran actualizar y eliminar -->
         <q-btn
           v-if="procesoForm.idProceso"
           color="primary"
@@ -177,7 +182,6 @@
           label="Eliminar Proceso"
           @click="eliminarProcesoSeleccionado"
         />
-        <!-- Si es un proceso nuevo, se muestra el botón para guardarlo en BD -->
         <q-btn
           v-else
           color="primary"
@@ -196,13 +200,17 @@
           v-model="tarea.tareaTipo"
           :options="['R', 'NR', 'E']"
           label="Tipo de Tarea"
-          outlined dense emit-value map-options
+          outlined
+          dense
+          emit-value
+          map-options
         />
+        <!-- Botón para eliminar tarea solo en front-end -->
+        <q-btn color="negative" label="Eliminar Tarea Frontend" flat @click="eliminarTareaFrontend(index)" />
       </q-card-section>
       <q-card-actions align="right">
         <q-btn color="secondary" label="Agregar Tarea Frontend" flat @click="agregarTarea" />
         <q-btn color="primary" label="Guardar/Actualizar Tareas en BD" @click="guardarTodasLasTareas" />
-        <!-- Botón para eliminar tarea en BD -->
         <q-btn color="primary" label="Eliminar Tarea en BD" @click="EliminarTarea" />
       </q-card-actions>
     </q-card-section>
@@ -215,7 +223,8 @@
         v-model="detalleIPERC.tipoPeligro"
         :options="['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII']"
         label="Tipo de Peligro"
-        outlined dense
+        outlined
+        dense
       />
       <q-input v-model="detalleIPERC.riesgos" label="Riesgos" outlined dense />
       <q-select v-model="detalleIPERC.tipoRiesgo" :options="['S', 'SO']" label="Tipo de Riesgo" outlined dense />
@@ -226,8 +235,10 @@
       <q-input v-model="detalleIPERC.expoRiesgo" label="Exposición al Riesgo" type="number" outlined dense />
       <q-input v-model="detalleIPERC.probabilidad" label="Probabilidad" type="number" outlined dense readonly />
       <q-input v-model="detalleIPERC.severidad" label="Severidad" type="number" outlined dense />
-      <q-input v-model="detalleIPERC.nivelDeRiesgo" label="Nivel de Riesgo" type="number" outlined dense readonly />
-      <q-input v-model="detalleIPERC.gradoDeRiesgo" label="Grado de Riesgo" outlined dense readonly />
+      <!-- Cambio: usamos "nivielDeRiesgo" y "gradoRiesgo" (sin "De") para que coincidan con la API y la tabla -->
+      <q-input v-model="detalleIPERC.nivielDeRiesgo" label="Nivel de Riesgo" type="number" outlined dense readonly />
+      <q-input v-model="detalleIPERC.gradoRiesgo" label="Grado de Riesgo" outlined dense readonly />
+
       <q-card-actions align="right">
         <q-btn color="primary" label="Guardar Detalle IPERC" @click="guardarDetalleIPERC" />
         <q-btn color="primary" label="Actualizar Detalle IPERC" @click="actualizarDetalleIPERC" />
@@ -250,10 +261,13 @@
           <q-select
             v-model="firmas.elaboradoPor"
             :options="trabajadores"
-            option-value="nombre"
+            option-value="idTrabajador"
             option-label="nombre"
             label="Elaborado Por"
-            outlined dense emit-value map-options
+            outlined
+            dense
+            emit-value
+            map-options
           />
           <div v-if="firmaElaboradoImg">
             <img :src="firmaElaboradoImg" alt="Firma Elaborado" style="max-width:300px; max-height:150px;" />
@@ -270,10 +284,13 @@
           <q-select
             v-model="firmas.revisadoPor"
             :options="trabajadores"
-            option-value="nombre"
+            option-value="idTrabajador"
             option-label="nombre"
             label="Revisado Por"
-            outlined dense emit-value map-options
+            outlined
+            dense
+            emit-value
+            map-options
           />
           <div v-if="firmaRevisadoImg">
             <img :src="firmaRevisadoImg" alt="Firma Revisado" style="max-width:300px; max-height:150px;" />
@@ -290,10 +307,13 @@
           <q-select
             v-model="firmas.aprobadoPor"
             :options="trabajadores"
-            option-value="nombre"
+            option-value="idTrabajador"
             option-label="nombre"
             label="Aprobado Por"
-            outlined dense emit-value map-options
+            outlined
+            dense
+            emit-value
+            map-options
           />
           <div v-if="firmaAprobadoImg">
             <img :src="firmaAprobadoImg" alt="Firma Aprobado" style="max-width:300px; max-height:150px;" />
@@ -360,7 +380,6 @@ export default {
         elaboradoPor: null,
         revisadoPor: null,
         aprobadoPor: null
-        // Si la API retorna un id para las firmas, se asigna a firmas.idFirma
       },
       // Para saber si existen firmas cargadas
       firmasExistentes: false,
@@ -371,26 +390,33 @@ export default {
         { name: "tareas", label: "Tareas y Detalles IPERC", field: "tareas", align: "left" }
       ],
       columnasDetalleIPERC: [
-        { name: "descPeligros", label: "Descripción Peligros", field: "descPeligros", align: "left" },
+        { name: "descPeligros", label: "Descripción de Peligros", field: "descPeligros", align: "left" },
         { name: "tipoPeligro", label: "Tipo de Peligro", field: "tipoPeligro", align: "center" },
         { name: "riesgos", label: "Riesgos", field: "riesgos", align: "left" },
         { name: "tipoRiesgo", label: "Tipo de Riesgo", field: "tipoRiesgo", align: "center" },
-        { name: "medidaControlDescrip", label: "Medidas de Control", field: "medidaControlDescrip", align: "left" },
+        {
+          name: "medidaControlDescrip",
+          label: "Medidas de Control",
+          field: "medidaControlDescrip",
+          align: "left",
+          style: "max-width:300px; white-space: normal; word-break: break-all;",
+          classes: "text-wrap"
+        },
         { name: "personasExpuestas", label: "Personas Expuestas", field: "personasExpuestas", align: "center" },
         { name: "procedimientosExistentes", label: "Procedimientos Existentes", field: "procedimientosExistentes", align: "center" },
         { name: "capacitacion", label: "Capacitación", field: "capacitacion", align: "center" },
         { name: "expoRiesgo", label: "Exposición al Riesgo", field: "expoRiesgo", align: "center" },
         { name: "probabilidad", label: "Probabilidad", field: "probabilidad", align: "center" },
         { name: "severidad", label: "Severidad", field: "severidad", align: "center" },
-        { name: "nivelDeRiesgo", label: "Nivel de Riesgo", field: "nivelDeRiesgo", align: "center" },
-        { name: "gradoDeRiesgo", label: "Grado de Riesgo", field: "gradoDeRiesgo", align: "center" }
+        { name: "nivielDeRiesgo", label: "Nivel de Riesgo", field: "nivielDeRiesgo", align: "center" },
+        { name: "gradoRiesgo", label: "Grado de Riesgo", field: "gradoRiesgo", align: "center" }
       ]
     };
   },
   methods: {
     /* ======================
        Métodos de Carga General
-    ========================= */
+    ====================== */
     async cargarClientes() {
       try {
         const response = await this.$api.get("/Clientes");
@@ -409,7 +435,7 @@ export default {
     },
     /* ======================
        Métodos de Proyectos
-    ========================= */
+    ====================== */
     async cargarProyectos() {
       if (!this.clienteSeleccionado) return;
       try {
@@ -452,7 +478,8 @@ export default {
         return;
       }
       try {
-        await this.$api.put(`/Proyectos/${this.proyectoSeleccionado}`, this.proyecto);
+        const updatedProject = { ...this.proyecto, idCliente: Number(this.clienteSeleccionado) };
+        await this.$api.put(`/Proyectos/${this.proyectoSeleccionado}`, updatedProject);
         this.$q.notify({ type: "positive", message: "Proyecto actualizado con éxito!" });
         this.cargarProyectos();
       } catch (error) {
@@ -477,7 +504,7 @@ export default {
     },
     /* ======================
        Métodos de Obras y Partidas
-    ========================= */
+    ====================== */
     async cargarObras() {
       if (!this.proyectoSeleccionado) return;
       try {
@@ -498,61 +525,196 @@ export default {
         console.error("Error cargando partidas:", error);
       }
     },
+    /* Métodos para Obras (Front-End y API) */
+    agregarObra() {
+      this.obras.push({ nombreObra: "", ubicacion: "", fechaInicio: "", fechaFin: "" });
+    },
+    async enviarObras() {
+      try {
+        for (let obra of this.obras) {
+          if (!obra.idObra) {
+            obra.idProyecto = this.proyectoSeleccionado;
+            const response = await this.$api.post("/Obras", obra);
+            if (response.data && response.data.id) {
+              obra.idObra = response.data.id;
+            }
+          }
+        }
+        this.$q.notify({ type: "positive", message: "Obras guardadas en la API con éxito!" });
+      } catch (error) {
+        console.error("Error guardando obras:", error);
+        this.$q.notify({ type: "negative", message: "Error guardando las obras en la API." });
+      }
+    },
+    eliminarObraFrontend(index) {
+      this.obras.splice(index, 1);
+    },
+    async eliminarObraAPI() {
+      if (!this.obraSeleccionada) {
+        this.$q.notify({ type: "negative", message: "Seleccione una obra para eliminar." });
+        return;
+      }
+      try {
+        await this.$api.delete(`/Obras/${this.obraSeleccionada}`);
+        this.$q.notify({ type: "positive", message: "Obra eliminada de la API con éxito!" });
+        this.obras = this.obras.filter(o => o.idObra !== this.obraSeleccionada);
+        this.obraSeleccionada = null;
+      } catch (error) {
+        console.error("Error eliminando obra de la API:", error);
+        this.$q.notify({ type: "negative", message: "Error eliminando la obra de la API." });
+      }
+    },
+    async actualizarObra() {
+      if (!this.obraSeleccionada) {
+        this.$q.notify({ type: "negative", message: "Seleccione una obra para actualizar." });
+        return;
+      }
+      const obra = this.obras.find(o => o.idObra === this.obraSeleccionada);
+      if (!obra) {
+        this.$q.notify({ type: "negative", message: "Obra no encontrada." });
+        return;
+      }
+      obra.idProyecto = Number(this.proyectoSeleccionado);
+      try {
+        await this.$api.put(`/Obras/${obra.idObra}`, obra);
+        this.$q.notify({ type: "positive", message: "Obra actualizada con éxito!" });
+      } catch (error) {
+        console.error("Error actualizando la obra:", error);
+        this.$q.notify({ type: "negative", message: "Error actualizando la obra." });
+      }
+    },
+    /* Métodos para Partidas (Front-End y API) */
+    agregarPartida() {
+      this.partidas.push({ nombrePartida: "" });
+    },
+    async enviarPartidas() {
+      try {
+        for (let partida of this.partidas) {
+          if (!partida.idPartida) {
+            partida.idObra = this.obraSeleccionada;
+            const response = await this.$api.post("/Partidas", partida);
+            if (response.data && response.data.id) {
+              partida.idPartida = response.data.id;
+            }
+          }
+        }
+        this.$q.notify({ type: "positive", message: "Partidas guardadas en la API con éxito!" });
+      } catch (error) {
+        console.error("Error guardando partidas:", error);
+        this.$q.notify({ type: "negative", message: "Error guardando las partidas en la API." });
+      }
+    },
+    eliminarPartidaFrontend(index) {
+      this.partidas.splice(index, 1);
+    },
+    async eliminarPartidaAPI() {
+      if (!this.partidaSeleccionada) {
+        this.$q.notify({ type: "negative", message: "Seleccione una partida para eliminar." });
+        return;
+      }
+      try {
+        await this.$api.delete(`/Partidas/${this.partidaSeleccionada}`);
+        this.$q.notify({ type: "positive", message: "Partida eliminada de la API con éxito!" });
+        this.partidas = this.partidas.filter(p => p.idPartida !== this.partidaSeleccionada);
+        this.partidaSeleccionada = null;
+      } catch (error) {
+        console.error("Error eliminando partida de la API:", error);
+        this.$q.notify({ type: "negative", message: "Error eliminando la partida de la API." });
+      }
+    },
+    async actualizarPartida() {
+      if (!this.partidaSeleccionada) {
+        this.$q.notify({ type: "negative", message: "Seleccione una partida para actualizar." });
+        return;
+      }
+      const partida = this.partidas.find(p => p.idPartida === this.partidaSeleccionada);
+      if (!partida) {
+        this.$q.notify({ type: "negative", message: "Partida no encontrada." });
+        return;
+      }
+      try {
+        await this.$api.put(`/Partidas/${partida.idPartida}`, partida);
+        this.$q.notify({ type: "positive", message: "Partida actualizada con éxito!" });
+      } catch (error) {
+        console.error("Error actualizando la partida:", error);
+        this.$q.notify({ type: "negative", message: "Error actualizando la partida." });
+      }
+    },
     /* ======================
-       Métodos para Partida: Procesos y Firmas
-    ========================= */
+       Métodos para Procesos, Tareas y Detalle IPERC
+    ====================== */
     async onPartidaSelected(idPartida) {
-      this.partidaSeleccionada = idPartida;
+      // Verificar y convertir a número si es necesario
+      if (!idPartida) {
+        console.warn("Partida seleccionada es undefined.");
+        return;
+      }
+      this.partidaSeleccionada = Number(idPartida);
+      console.log("Partida seleccionada:", this.partidaSeleccionada);
       await this.cargarProcesos();
       await this.cargarFirmas();
     },
     async cargarProcesos() {
       if (!this.partidaSeleccionada) return;
       try {
+        // Se obtiene el arreglo de procesos; si no existe, retorna un arreglo vacío
+        const procesosResp = await this.$api
+          .get(`/Procesos/PorPartida/${this.partidaSeleccionada}`)
+          .catch(err => (err.response && err.response.status === 404 ? { data: [] } : Promise.reject(err)));
+        const procesos = procesosResp.data;
+        // Para cada proceso, obtener las tareas y sus detalles
         this.procesosGuardados = await Promise.all(
-          (await this.$api.get(`/Procesos/PorPartida/${this.partidaSeleccionada}`)).data.map(
-            async proceso => ({
-              ...proceso,
-              tareas: await Promise.all(
-                (await this.$api.get(`/Tareas/PorProceso/${proceso.idProceso}`)).data.map(
-                  async tarea => {
-                    const detalleResponse = await this.$api
-                      .get(`/DetalleIPERC/PorTarea/${tarea.idTarea}`)
-                      .catch(() => ({ data: [] }));
-                    return { ...tarea, detalleIPERC: detalleResponse.data };
-                  }
-                )
-              )
-            })
-          )
+          procesos.map(async proceso => {
+            const tareasResp = await this.$api
+              .get(`/Tareas/PorProceso/${proceso.idProceso}`)
+              .catch(err => (err.response && err.response.status === 404 ? { data: [] } : Promise.reject(err)));
+            const tareas = tareasResp.data;
+            const tareasConDetalles = await Promise.all(
+              tareas.map(async tarea => {
+                const detalleResp = await this.$api
+                  .get(`/DetalleIPERC/PorTarea/${tarea.idTarea}`)
+                  .catch(err => (err.response && err.response.status === 404 ? { data: [] } : Promise.reject(err)));
+                return { ...tarea, detalleIPERC: detalleResp.data };
+              })
+            );
+            return { ...proceso, tareas: tareasConDetalles };
+          })
         );
       } catch (error) {
         console.error("Error cargando procesos y tareas:", error);
       }
     },
     async cargarFirmas() {
-      if (!this.partidaSeleccionada) return;
-      try {
-        const response = await this.$api.get(`/Firmas/Matriz/${this.partidaSeleccionada}`);
-        const firmaData = response.data[0]; // Extraer el primer objeto del array
-        this.firmasExistentes = !!firmaData;
-        console.log("✅ Firmas recuperadas:", firmaData);
-        if (firmaData) {
-          this.firmas.elaboradoPor = firmaData.nombreElaboradoPor;
-          this.firmas.revisadoPor = firmaData.nombreRevisadoPor;
-          this.firmas.aprobadoPor = firmaData.nombreAprobadoPor;
-          this.cargarFirmaBase64("firmaElaborado", firmaData.firmaElaboradoUrl);
-          this.cargarFirmaBase64("firmaRevisado", firmaData.firmaRevisadoUrl);
-          this.cargarFirmaBase64("firmaAprobado", firmaData.firmaAprobadoUrl);
+        if (!this.partidaSeleccionada) return;
+        try {
+          const response = await this.$api.get(`/Firmas/Matriz/${this.partidaSeleccionada}`);
+          const firmaData = response.data[0]; // Tomamos el primer objeto del array
+          this.firmasExistentes = !!firmaData;
+          console.log("Firmas recuperadas:", firmaData);
+          if (firmaData) {
+            // Buscamos en el array de trabajadores el ID correspondiente a cada nombre
+            const elaborado = this.trabajadores.find(w => w.nombre === firmaData.nombreElaboradoPor);
+            const revisado = this.trabajadores.find(w => w.nombre === firmaData.nombreRevisadoPor);
+            const aprobado = this.trabajadores.find(w => w.nombre === firmaData.nombreAprobadoPor);
+
+            // Guardamos el id de la firma (para PUT/DELETE)
+            this.firmas.idFirma = firmaData.idFirma;
+
+            // Asignamos los IDs (o null si no se encuentra)
+            this.firmas.elaboradoPor = elaborado ? elaborado.idTrabajador : null;
+            this.firmas.revisadoPor = revisado ? revisado.idTrabajador : null;
+            this.firmas.aprobadoPor = aprobado ? aprobado.idTrabajador : null;
+
+            // Cargar imágenes si existen (la función 'cargarFirmaBase64' no cambia)
+            this.cargarFirmaBase64("firmaElaborado", firmaData.firmaElaboradoUrl);
+            this.cargarFirmaBase64("firmaRevisado", firmaData.firmaRevisadoUrl);
+            this.cargarFirmaBase64("firmaAprobado", firmaData.firmaAprobadoUrl);
+          }
+        } catch (error) {
+          console.warn("No hay firmas registradas para esta partida.");
+          this.firmasExistentes = false;
         }
-      } catch (error) {
-        console.warn("⚠️ No hay firmas registradas para esta partida.");
-        this.firmasExistentes = false;
-      }
-    },
-    /* ======================
-       Métodos para Detalle IPERC
-    ========================= */
+      },
     async guardarDetalleIPERC() {
       if (!this.tareaSeleccionada) return;
       try {
@@ -565,12 +727,12 @@ export default {
       }
     },
     async actualizarDetalleIPERC() {
-      if (!this.detalleIPERC.id) {
+      if (!this.detalleIPERC.idDetalle) {
         this.$q.notify({ type: "negative", message: "Seleccione un Detalle IPERC para actualizar." });
         return;
       }
       try {
-        await this.$api.put(`/DetalleIPERC/${this.detalleIPERC.id}`, this.detalleIPERC);
+        await this.$api.put(`/DetalleIPERC/${this.detalleIPERC.idDetalle}`, this.detalleIPERC);
         this.$q.notify({ type: "positive", message: "Detalle IPERC actualizado." });
         await this.cargarProcesos();
       } catch (error) {
@@ -579,12 +741,12 @@ export default {
       }
     },
     async eliminarDetalleIPERC() {
-      if (!this.detalleIPERC.id) {
+      if (!this.detalleIPERC.idDetalle) {
         this.$q.notify({ type: "negative", message: "Seleccione un Detalle IPERC para eliminar." });
         return;
       }
       try {
-        await this.$api.delete(`/DetalleIPERC/${this.detalleIPERC.id}`);
+        await this.$api.delete(`/DetalleIPERC/${this.detalleIPERC.idDetalle}`);
         this.$q.notify({ type: "positive", message: "Detalle IPERC eliminado." });
         await this.cargarProcesos();
         this.detalleIPERC = {};
@@ -595,7 +757,7 @@ export default {
     },
     /* ======================
        Métodos para Procesos
-    ========================= */
+    ====================== */
     nuevoProceso() {
       this.procesoForm = { nombreProceso: "" };
       this.tareas = [];
@@ -653,7 +815,7 @@ export default {
     },
     /* ======================
        Métodos para Tareas
-    ========================= */
+    ====================== */
     seleccionarTarea(tarea) {
       this.tareaSeleccionada = tarea;
       if (tarea.detalleIPERC && tarea.detalleIPERC.length > 0) {
@@ -665,7 +827,9 @@ export default {
     agregarTarea() {
       this.tareas.push({ nombreTarea: "", tareaTipo: "R" });
     },
-    // Se elimina el método duplicado "eliminarTarea(index)" ya que se usará "EliminarTarea" para borrar desde BD.
+    eliminarTareaFrontend(index) {
+      this.tareas.splice(index, 1);
+    },
     async EliminarTarea() {
       if (!this.tareaSeleccionada || !this.tareaSeleccionada.idTarea) {
         this.$q.notify({ type: "negative", message: "Seleccione una tarea para eliminar." });
@@ -715,13 +879,13 @@ export default {
     },
     /* ======================
        Método para seleccionar un Detalle IPERC desde la tabla interna
-    ========================= */
+    ====================== */
     seleccionarDetalleIPERC(detalle) {
       this.detalleIPERC = JSON.parse(JSON.stringify(detalle));
     },
     /* ======================
-       Métodos para Firmas (usando el código proporcionado)
-    ========================= */
+       Métodos para Firmas
+    ====================== */
     borrarFirma(ref) {
       if (this.$refs[ref]) this.$refs[ref].clearSignature();
     },
@@ -734,12 +898,12 @@ export default {
       this.firmas.firmaRevisadoBase64 = this.obtenerBase64Firma("firmaRevisado");
       this.firmas.firmaAprobadoBase64 = this.obtenerBase64Firma("firmaAprobado");
       try {
-        console.log("📤 Enviando firmas:", this.firmas);
+        console.log("Enviando firmas:", this.firmas);
         await this.$api.post("/Firmas", { ...this.firmas, idPartida: this.partidaSeleccionada });
         this.$q.notify({ type: "positive", message: "Firmas guardadas con éxito!" });
         this.cargarFirmas();
       } catch (error) {
-        console.error("❌ Error guardando firmas:", error);
+        console.error("Error guardando firmas:", error);
         this.$q.notify({ type: "negative", message: "Error al guardar las firmas." });
       }
     },
@@ -756,6 +920,7 @@ export default {
       }
     },
     async actualizarFirmas() {
+      // Al actualizar, se enviarán los IDs que están en 'firmas'
       if (!this.firmas.idFirma) {
         this.$q.notify({ type: "negative", message: "No hay firma seleccionada para actualizar." });
         return;
@@ -772,7 +937,7 @@ export default {
         };
         await this.$api.put(`/Firmas/${this.firmas.idFirma}`, data);
         this.$q.notify({ type: "positive", message: "Firmas actualizadas con éxito!" });
-        this.cargarFirmas();
+        await this.cargarFirmas();
       } catch (error) {
         console.error(error);
         this.$q.notify({ type: "negative", message: "Error actualizando firmas." });
@@ -803,3 +968,9 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.text-wrap {
+  white-space: normal;
+}
+</style>

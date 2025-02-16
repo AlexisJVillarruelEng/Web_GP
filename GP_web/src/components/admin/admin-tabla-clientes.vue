@@ -23,7 +23,7 @@ export default {
         { name: "contactoCliente", label: "Representante", field: "contactoCliente", align: "left" },
         { name: "correoCliente", label: "Correo", field: "correoCliente", align: "left" },
         { name: "telefonoCliente", label: "Teléfono", field: "telefonoCliente", align: "left" },
-        { name: "fechaCreacion", label: "Fecha Creación", field: "fechaCreacion", align: "left", format: val => val ? new Date(val).toLocaleDateString() : "" }
+        // { name: "fechaCreacion", label: "Fecha Creación", field: "fechaCreacion", align: "left", format: val => val ? new Date(val).toLocaleDateString() : "" }
       ]
     };
   }
