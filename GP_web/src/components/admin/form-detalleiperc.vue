@@ -4,7 +4,7 @@
       <div class="text-h6">Añadir Detalles IPERC</div>
     </q-card-section>
 
-    <!-- 🔹 Selección de Cliente, Proyecto, Obra, Partida -->
+    <!-- Selección de Cliente, Proyecto, Obra, Partida -->
     <q-card-section>
       <q-select
         v-model="clienteSeleccionado"
@@ -56,7 +56,7 @@
       />
     </q-card-section>
 
-    <!-- 📌 Tabla de Procesos, Tareas y Detalles IPERC -->
+    <!-- Tabla de Procesos, Tareas y Detalles IPERC -->
     <q-card-section>
       <q-table
         :rows="procesosGuardados"
@@ -67,8 +67,9 @@
       >
         <template v-slot:body="props">
           <q-tr :props="props">
-            <q-td key="nombreProceso">{{ props.row.nombreProceso }}</q-td>
-            <q-td key="tareas">
+            <q-td>{{ props.row.idProceso }}</q-td>
+            <q-td>{{ props.row.nombreProceso }}</q-td>
+            <q-td>
               <div class="tareas-contenedor">
                 <div
                   class="tarea-item"
@@ -76,17 +77,22 @@
                   :key="tarea.idTarea"
                   style="margin-bottom: 1rem;"
                 >
+                  <!-- Botón para seleccionar la tarea y visualizar sus detalles -->
                   <q-btn flat dense color="primary" @click="seleccionarTarea(tarea)">
                     {{ tarea.nombreTarea }} - ({{ tarea.tareaTipo }})
                   </q-btn>
-                  <!-- 🔹 Tabla de Detalles IPERC -->
+                  <!-- Botón para agregar un nuevo detalle a esta tarea -->
+                  <q-btn flat dense color="secondary" label="Añadir Detalle" @click="agregarDetalleTarea(tarea)" />
+                  <!-- Tabla interna de Detalle IPERC -->
                   <div class="detalle-iperc-container">
                     <q-table
-                      v-if="tarea.detalleIPERC.length > 0"
+                      v-if="tarea.detalleIPERC && tarea.detalleIPERC.length > 0"
                       :rows="tarea.detalleIPERC"
                       :columns="columnasDetalleIPERC"
+                      row-key="idDetalle"
                       dense
-                      class="tabla-detalle-iperc"
+                      flat
+                      style="margin-left: 1.5rem; margin-top: 0.5rem;"
                       wrap-cells
                     />
                     <div v-else>
@@ -101,12 +107,11 @@
       </q-table>
     </q-card-section>
 
-    <!-- 📌 Formulario para añadir Detalles IPERC -->
+    <!-- Formulario para añadir Detalles IPERC -->
     <q-card-section v-if="tareaSeleccionada">
       <div class="text-subtitle1">
         Tarea Seleccionada: {{ tareaSeleccionada.nombreTarea }}
       </div>
-
       <q-input v-model="detalleIPERC.descPeligros" label="Descripción de Peligros" outlined dense />
       <q-select
         v-model="detalleIPERC.tipoPeligro"
@@ -125,13 +130,11 @@
       />
       <q-input v-model="detalleIPERC.medidaControlDescrip" label="Medidas de Control" type="textarea" outlined dense />
       <q-input v-model="detalleIPERC.personasExpuestas" label="Personas Expuestas" type="number" outlined dense />
-      <!-- Para el POST usamos el nombre correcto -->
       <q-input v-model="detalleIPERC.procedimientosExistentes" label="Procedimientos Existentes" type="number" outlined dense />
       <q-input v-model="detalleIPERC.capacitacion" label="Capacitación" type="number" outlined dense />
       <q-input v-model="detalleIPERC.expoRiesgo" label="Exposición al Riesgo" type="number" outlined dense />
       <q-input v-model="detalleIPERC.probabilidad" label="Probabilidad" type="number" outlined dense readonly />
       <q-input v-model="detalleIPERC.severidad" label="Severidad" type="number" outlined dense />
-      <!-- Usamos los nombres que retorna la API en el GET -->
       <q-input v-model="detalleIPERC.nivielDeRiesgo" label="Nivel de Riesgo" type="number" outlined dense readonly />
       <q-input v-model="detalleIPERC.gradoRiesgo" label="Grado de Riesgo" outlined dense readonly />
 
@@ -162,7 +165,6 @@ export default {
         { name: "nombreProceso", label: "Proceso", field: "nombreProceso", align: "left" },
         { name: "tareas", label: "Tareas y Detalles IPERC", field: "tareas", align: "left" }
       ],
-      // Se usan las propiedades según la API GET:
       columnasDetalleIPERC: [
         { name: "descPeligros", label: "Descripción de Peligros", field: "descPeligros", align: "left" },
         { name: "tipoPeligro", label: "Tipo de Peligro", field: "tipoPeligro", align: "center" },
@@ -177,7 +179,6 @@ export default {
           classes: "text-wrap"
         },
         { name: "personasExpuestas", label: "Personas Expuestas", field: "personasExpuestas", align: "center" },
-        // Nota: En el GET el campo se llama "procedimietntosExistentes"
         { name: "procedimietntosExistentes", label: "Procedimientos Existentes", field: "procedimietntosExistentes", align: "center" },
         { name: "capacitacion", label: "Capacitación", field: "capacitacion", align: "center" },
         { name: "expoRiesgo", label: "Exposición al Riesgo", field: "expoRiesgo", align: "center" },
@@ -205,31 +206,27 @@ export default {
       try {
         this.procesosGuardados = await Promise.all(
           (await this.$api.get(`/Procesos/PorPartida/${this.partidaSeleccionada}`)).data.map(
-            async proceso => ({
-              ...proceso,
-              tareas: await Promise.all(
-                (await this.$api.get(`/Tareas/PorProceso/${proceso.idProceso}`)).data.map(
-                  async tarea => {
-                    // Obtenemos el arreglo de detalles de la tarea
-                    const respDetalle = await this.$api
-                      .get(`/DetalleIPERC/PorTarea/${tarea.idTarea}`)
-                      .catch(() => ({ data: [] }));
-                    // Mapeamos cada detalle para corregir el nombre del campo
-                    const detallesMapeados = respDetalle.data.map(detalle => {
-                      // Si viene el campo con error tipográfico, copiamos su valor a la propiedad correcta para el POST
-                      if (detalle.procedimietntosExistentes !== undefined) {
-                        detalle.procedimientosExistentes = detalle.procedimietntosExistentes;
-                      }
-                      return detalle;
-                    });
-                    return {
-                      ...tarea,
-                      detalleIPERC: detallesMapeados
-                    };
-                  }
-                )
-              )
-            })
+            async proceso => {
+              const tareasResp = await this.$api.get(`/Tareas/PorProceso/${proceso.idProceso}`)
+                .catch(err => (err.response && err.response.status === 404) ? { data: [] } : Promise.reject(err));
+              const tareas = tareasResp.data;
+              const tareasConDetalles = await Promise.all(
+                tareas.map(async tarea => {
+                  const respDetalle = await this.$api.get(`/DetalleIPERC/PorTarea/${tarea.idTarea}`)
+                    .catch(err => (err.response && err.response.status === 404) ? { data: [] } : Promise.reject(err));
+                  const detallesMapeados = (respDetalle.data && respDetalle.data.length)
+                    ? respDetalle.data.map(detalle => {
+                        if (detalle.procedimietntosExistentes !== undefined) {
+                          detalle.procedimientosExistentes = detalle.procedimietntosExistentes;
+                        }
+                        return detalle;
+                      })
+                    : [];
+                  return { ...tarea, detalleIPERC: detallesMapeados };
+                })
+              );
+              return { ...proceso, tareas: tareasConDetalles };
+            }
           )
         );
       } catch (error) {
@@ -240,9 +237,15 @@ export default {
       this.tareaSeleccionada = tarea;
       console.log("✅ Tarea seleccionada:", tarea);
     },
+    // Nuevo método: Al hacer click en "Añadir Detalle", se selecciona la tarea y se reinicia el formulario de detalle
+    agregarDetalleTarea(tarea) {
+      this.tareaSeleccionada = tarea;
+      this.detalleIPERC = {}; // Reinicia el formulario para un nuevo detalle
+      console.log("✅ Agregar detalle para tarea:", tarea);
+    },
     async guardarDetalleIPERC() {
-      // Al hacer el POST, usamos la propiedad "procedimientosExistentes" (correcta para el POST)
       await this.$api.post("/DetalleIPERC", { ...this.detalleIPERC, idTarea: this.tareaSeleccionada.idTarea });
+      this.$q.notify({ type: "positive", message: "Detalle IPERC añadido correctamente" });
       await this.cargarProcesos();
     }
   },
