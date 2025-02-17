@@ -4,7 +4,7 @@
       <div class="text-h6">Añadir Detalles IPERC</div>
     </q-card-section>
 
-    <!-- Selección de Cliente, Proyecto, Obra, Partida -->
+    <!-- 🔹 Selección de Cliente, Proyecto, Obra, Partida -->
     <q-card-section>
       <q-select
         v-model="clienteSeleccionado"
@@ -56,7 +56,7 @@
       />
     </q-card-section>
 
-    <!-- Tabla de Procesos, Tareas y Detalles IPERC -->
+    <!-- 📌 Tabla de Procesos, Tareas y Detalles IPERC -->
     <q-card-section>
       <q-table
         :rows="procesosGuardados"
@@ -107,11 +107,12 @@
       </q-table>
     </q-card-section>
 
-    <!-- Formulario para añadir Detalles IPERC -->
+    <!-- 📌 Formulario para añadir Detalles IPERC -->
     <q-card-section v-if="tareaSeleccionada">
       <div class="text-subtitle1">
         Tarea Seleccionada: {{ tareaSeleccionada.nombreTarea }}
       </div>
+
       <q-input v-model="detalleIPERC.descPeligros" label="Descripción de Peligros" outlined dense />
       <q-select
         v-model="detalleIPERC.tipoPeligro"
@@ -216,6 +217,7 @@ export default {
                     .catch(err => (err.response && err.response.status === 404) ? { data: [] } : Promise.reject(err));
                   const detallesMapeados = (respDetalle.data && respDetalle.data.length)
                     ? respDetalle.data.map(detalle => {
+                        // Si viene el campo con error tipográfico, copiamos su valor a la propiedad correcta para el POST
                         if (detalle.procedimietntosExistentes !== undefined) {
                           detalle.procedimientosExistentes = detalle.procedimietntosExistentes;
                         }
@@ -241,12 +243,18 @@ export default {
     agregarDetalleTarea(tarea) {
       this.tareaSeleccionada = tarea;
       this.detalleIPERC = {}; // Reinicia el formulario para un nuevo detalle
+      this.$q.notify({ type: "info", message: "Listo para añadir un nuevo detalle a la tarea." });
       console.log("✅ Agregar detalle para tarea:", tarea);
     },
     async guardarDetalleIPERC() {
-      await this.$api.post("/DetalleIPERC", { ...this.detalleIPERC, idTarea: this.tareaSeleccionada.idTarea });
-      this.$q.notify({ type: "positive", message: "Detalle IPERC añadido correctamente" });
-      await this.cargarProcesos();
+      try {
+        await this.$api.post("/DetalleIPERC", { ...this.detalleIPERC, idTarea: this.tareaSeleccionada.idTarea });
+        this.$q.notify({ type: "positive", message: "Detalle IPERC añadido correctamente" });
+        await this.cargarProcesos();
+      } catch (error) {
+        console.error(error);
+        this.$q.notify({ type: "negative", message: "Error guardando Detalle IPERC" });
+      }
     }
   },
   mounted() {
