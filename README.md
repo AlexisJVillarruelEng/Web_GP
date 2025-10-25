@@ -25,3 +25,5 @@ Creacion de Intranet con Vue y Quasar para la gestión de matrices IPERC, Trabaj
 **Backend / Servicios:** API REST.
 
 
+##Documentacion
+https://deepwiki.com/AlexisJVillarruelEng/Web_GP
